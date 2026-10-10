@@ -1,4 +1,4 @@
-FROM lcr.loongnix.cn/library/golang:1.25
+FROM lcr.loongnix.cn/library/golang:1.27
 
 RUN apt-get update && apt-get install -y \
     bash \

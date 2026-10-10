@@ -13,6 +13,12 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 DISTS="${ROOT_DIR}/dists"
 SRCS="${ROOT_DIR}/srcs"
 
+# ======================================================================
+
+PATCHES="${ROOT_DIR}/patches"
+BUILD_DIR="${SRCS}/${VERSION}"
+DIST_DIR="${DISTS}/${VERSION}"
+
 mkdir -p "${DISTS}/${VERSION}" "${SRCS}"
 
 # ==========================================
@@ -25,12 +31,11 @@ echo "🔧 Compiling ${UPSTREAM_OWNER}/${UPSTREAM_REPO} ${VERSION}..."
 prepare()
 {
     echo "📦 [Prepare] Setting up build environment..."
-    
-    # TODO: 在此处添加准备命令
-    # 例如：apt-get update && apt-get install -y build-essential
-    # 例如：git clone -b ${VERSION} --depth=1 https://github.com/flannel-io/flannel ${SRCS}/${VERSION}
-    # 例如：patch -p1 < patches/loongarch-fix.patch
-    
+
+    # 拉取上游指定版本的源码（浅克隆，只取该 tag 的提交）
+    rm -rf ${SRCS}/${VERSION}
+    git clone -b ${VERSION} --depth=1 https://github.com/${UPSTREAM_OWNER}/${UPSTREAM_REPO} ${SRCS}/${VERSION}
+
     echo "✅ [Prepare] Environment ready."
 }
 
@@ -38,11 +43,14 @@ prepare()
 build()
 {
     echo "🔨 [Build] Compiling source code..."
-    
-    # TODO: 在此处添加编译命令
-    # 例如：make -j$(nproc) ARCH=loongarch64
-    # 例如：cmake -DCMAKE_BUILD_TYPE=Release .. && make
-    
+
+    (
+        cd ${BUILD_DIR}
+        # 应用 patches/ 下的补丁（为 Makefile 增加 tar.gz-loong64 目标）
+        git apply ${PATCHES}/*.patch
+        # 原生编译 loong64 flanneld，并打包成 dist/flannel-<TAG>-linux-loong64.tar.gz
+        make tar.gz-loong64
+    )
 
     echo "✅ [Build] Compilation finished."
 }
@@ -51,11 +59,10 @@ build()
 post_build()
 {
     echo "📦 [Post-Build] Organizing artifacts..."
-    
-    # TODO: 在此处添加整理命令
-    # 例如：mkdir -p dists && cp binary dist/
-    # 例如：strip dist/binary
-    
+
+    # 制品为 Makefile 在 dist/ 下生成的 tar.gz 包
+    cp -a ${BUILD_DIR}/dist/*.tar.gz ${DIST_DIR}/
+
     echo "✅ [Post-Build] Artifacts ready in ./dists/${VERSION}."
 }
 
