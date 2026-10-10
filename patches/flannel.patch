@@ -1,0 +1,17 @@
+diff --git a/Makefile b/Makefile
+index ae98ea0..fecc49c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -230,6 +230,12 @@ tar.gz:
+ 	tar --transform='flags=r;s|-riscv64||' -zcvf dist/flannel-$(TAG)-linux-riscv64.tar.gz -C dist flanneld-riscv64 mk-docker-opts.sh ../README.md
+ 	tar -tvf dist/flannel-$(TAG)-linux-riscv64.tar.gz
+ 
++## Build a .tar.gz for the loong64 flanneld binary
++tar.gz-loong64:
++	ARCH=loong64 make dist/flanneld
++	tar -zcvf dist/flannel-$(TAG)-linux-loong64.tar.gz -C dist flanneld mk-docker-opts.sh ../README.md
++	tar -tvf dist/flannel-$(TAG)-linux-loong64.tar.gz
++
+ install:
+ 	# This is intended as just a developer convenience to help speed up non-containerized builds
+ 	# It is NOT how you install flannel
